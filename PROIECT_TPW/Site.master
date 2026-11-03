@@ -40,32 +40,37 @@
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse" title="more options">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" runat="server" href="~/">Application name 
-                    <asp:Menu ID="Menu1" runat="server" Orientation="Horizontal">
+                    <a class="navbar-brand" runat="server" href="~/">GESTIUNE SALARII</a><br />
+                    <asp:Menu ID="Menu1" runat="server" Orientation="Horizontal"
+                        BackColor="Yellow" BorderColor="Red" BorderStyle="Double"
+                        Font-Size="Large" ForeColor="#0000CC">
+                        <DynamicHoverStyle BackColor="#FF66CC" BorderColor="Yellow" BorderStyle="Dotted" Font-Italic="True" />
+                        <DynamicMenuStyle BackColor="#99FF33" BorderColor="Yellow" BorderStyle="Solid" />
                         <Items>
-                            <asp:MenuItem NavigateUrl="~/Default.aspx" Text="unu" Value="unu"></asp:MenuItem>
-                            <asp:MenuItem Text="doi" Value="doi">
-                                <asp:MenuItem Text="doi_1" Value="doi_1"></asp:MenuItem>
-                                <asp:MenuItem Text="doi_2" Value="doi_2"></asp:MenuItem>
-                                <asp:MenuItem Text="doi_3" Value="doi_3"></asp:MenuItem>
+                            <asp:MenuItem NavigateUrl="~/Default.aspx" Text="ACASA &nbsp;&nbsp;&nbsp;" Value="ACASA"></asp:MenuItem>
+                            <asp:MenuItem Text="OPERATII SALARII &nbsp;&nbsp;&nbsp;" Value="OPERATII">
+                                <asp:MenuItem NavigateUrl="~/ActualizareDate.aspx" Text="Actualizare &amp; Cautare (ADO.NET)" Value="Actualizare"></asp:MenuItem>
+                                <asp:MenuItem NavigateUrl="~/CalculSalarii.aspx" Text="Procedura Stocata &amp; Calcul" Value="Procedura"></asp:MenuItem>
+                                <asp:MenuItem NavigateUrl="~/ServiciuWebPage.aspx" Text="Acces prin Serviciu Web" Value="ServiciuWeb"></asp:MenuItem>
                             </asp:MenuItem>
+                            <asp:MenuItem NavigateUrl="~/Rapoarte.aspx" Text="RAPOARTE CRYSTAL" Value="RAPOARTE"></asp:MenuItem>
                         </Items>
                     </asp:Menu>
-
-                    </a><br>
-
-                &nbsp;</div>
+                    &nbsp;
+                </div>
                 <div class="navbar-collapse collapse">
+                    <!-- Old default menu commented out as required
                     <ul class="nav navbar-nav">
                         <li><a runat="server" href="~/">Home</a></li>
                         <li><a runat="server" href="~/About">About</a></li>
                         <li><a runat="server" href="~/Contact">Contact</a></li>
                     </ul>
+                    -->
                     <asp:LoginView runat="server" ViewStateMode="Disabled">
                         <AnonymousTemplate>
                             <ul class="nav navbar-nav navbar-right">
@@ -75,7 +80,7 @@
                         </AnonymousTemplate>
                         <LoggedInTemplate>
                             <ul class="nav navbar-nav navbar-right">
-                                <li><a runat="server" href="~/Account/Manage" title="Manage your account">Hello, <%: Context.User.Identity.GetUserName()  %>!</a></li>
+                                <li><a runat="server" href="~/Account/Manage" title="Manage your account">Hello, <%: Context.User.Identity.GetUserName()  %> !</a></li>
                                 <li>
                                     <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Log off" LogoutPageUrl="~/" OnLoggingOut="Unnamed_LoggingOut" />
                                 </li>
