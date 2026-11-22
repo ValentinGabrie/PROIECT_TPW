@@ -1,0 +1,171 @@
+-- ============================================================================
+-- SCRIPT EXTERN SQL*Plus - PROIECT ASP.NET APLICATIE SALARIZARE
+-- Se ruleaza din SQL*Plus ANTERIOR lansarii aplicatiei Web!
+-- ============================================================================
+-- PAS 1 (conectat ca system as sysdba, o singura data):
+--   ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+--   CREATE USER student IDENTIFIED BY student;
+--   GRANT ALL PRIVILEGES TO student;
+--   DISC;
+--   CONN student/student;
+-- ============================================================================
+
+-- Curatare obiecte anterioare (daca exista)
+BEGIN EXECUTE IMMEDIATE 'DROP TRIGGER TRG_ANGAJATI_CALC'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE SP_RECALCULEAZA_SALARII'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE SP_MODIFICA_PROCENTE'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_ANGAJATI_NRCRT'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE ANGAJATI CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE PROCENTE CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+-- 1. Tabela suplimentara PROCENTE (cu parola criptata SHA-256)
+-- Parola implicita: "admin123"
+-- SHA-256("admin123") = 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+CREATE TABLE PROCENTE (
+    ID           INTEGER PRIMARY KEY,
+    CAS_PROC     NUMBER(5,4) DEFAULT 0.25 NOT NULL CHECK (CAS_PROC >= 0 AND CAS_PROC <= 1),
+    CASS_PROC    NUMBER(5,4) DEFAULT 0.10 NOT NULL CHECK (CASS_PROC >= 0 AND CASS_PROC <= 1),
+    IMPOZIT_PROC NUMBER(5,4) DEFAULT 0.10 NOT NULL CHECK (IMPOZIT_PROC >= 0 AND IMPOZIT_PROC <= 1),
+    PAROLA_HASH  VARCHAR2(128) NOT NULL
+);
+
+INSERT INTO PROCENTE (ID, CAS_PROC, CASS_PROC, IMPOZIT_PROC, PAROLA_HASH)
+VALUES (1, 0.25, 0.10, 0.10, '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9');
+
+-- 2. Secventa auto-increment pentru NR_CRT
+CREATE SEQUENCE SEQ_ANGAJATI_NRCRT START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+-- 3. Tabela principala ANGAJATI (toate valorile numerice sunt INTEGER)
+CREATE TABLE ANGAJATI (
+    NR_CRT         INTEGER PRIMARY KEY,
+    NUME           VARCHAR2(50) NOT NULL,
+    PRENUME        VARCHAR2(50) NOT NULL,
+    FUNCTIE        VARCHAR2(60) NOT NULL,
+    SALAR_BAZA     INTEGER NOT NULL CHECK (SALAR_BAZA >= 0),
+    SPOR_PROC      INTEGER DEFAULT 0 NOT NULL CHECK (SPOR_PROC >= 0 AND SPOR_PROC <= 100),
+    PREMII_BRUTE   INTEGER DEFAULT 0 NOT NULL CHECK (PREMII_BRUTE >= 0),
+    TOTAL_BRUT     INTEGER,
+    BRUT_IMPOZABIL INTEGER,
+    IMPOZIT        INTEGER,
+    CAS            INTEGER,
+    CASS           INTEGER,
+    RETINERI       INTEGER DEFAULT 0 NOT NULL CHECK (RETINERI >= 0),
+    VIRAT_CARD     INTEGER,
+    POZA           BLOB
+);
+
+-- 4. Trigger automat pentru auto-increment NR_CRT si recalculare automata a salariului
+CREATE OR REPLACE TRIGGER TRG_ANGAJATI_CALC
+BEFORE INSERT OR UPDATE ON ANGAJATI
+FOR EACH ROW
+DECLARE
+    v_cas_proc     NUMBER(5,4);
+    v_cass_proc    NUMBER(5,4);
+    v_impozit_proc NUMBER(5,4);
+BEGIN
+    IF INSERTING AND :NEW.NR_CRT IS NULL THEN
+        SELECT SEQ_ANGAJATI_NRCRT.NEXTVAL INTO :NEW.NR_CRT FROM DUAL;
+    END IF;
+
+    SELECT CAS_PROC, CASS_PROC, IMPOZIT_PROC
+    INTO v_cas_proc, v_cass_proc, v_impozit_proc
+    FROM PROCENTE
+    WHERE ID = 1;
+
+    :NEW.SPOR_PROC    := NVL(:NEW.SPOR_PROC, 0);
+    :NEW.PREMII_BRUTE := NVL(:NEW.PREMII_BRUTE, 0);
+    :NEW.RETINERI     := NVL(:NEW.RETINERI, 0);
+
+    :NEW.TOTAL_BRUT     := ROUND(:NEW.SALAR_BAZA * (1 + :NEW.SPOR_PROC / 100) + :NEW.PREMII_BRUTE, 0);
+    :NEW.CAS            := ROUND(:NEW.TOTAL_BRUT * v_cas_proc, 0);
+    :NEW.CASS           := ROUND(:NEW.TOTAL_BRUT * v_cass_proc, 0);
+    :NEW.BRUT_IMPOZABIL := :NEW.TOTAL_BRUT - :NEW.CAS - :NEW.CASS;
+    :NEW.IMPOZIT        := ROUND(:NEW.BRUT_IMPOZABIL * v_impozit_proc, 0);
+    :NEW.VIRAT_CARD     := :NEW.TOTAL_BRUT - :NEW.IMPOZIT - :NEW.CAS - :NEW.CASS - :NEW.RETINERI;
+END;
+/
+
+-- 5. Procedura stocata tranzactionala pentru recalcularea salariilor tuturor angajatilor
+CREATE OR REPLACE PROCEDURE SP_RECALCULEAZA_SALARII
+AS
+    v_cas_proc     NUMBER(5,4);
+    v_cass_proc    NUMBER(5,4);
+    v_impozit_proc NUMBER(5,4);
+BEGIN
+    SELECT CAS_PROC, CASS_PROC, IMPOZIT_PROC
+    INTO v_cas_proc, v_cass_proc, v_impozit_proc
+    FROM PROCENTE
+    WHERE ID = 1;
+
+    UPDATE ANGAJATI
+    SET TOTAL_BRUT = ROUND(SALAR_BAZA * (1 + NVL(SPOR_PROC, 0) / 100) + NVL(PREMII_BRUTE, 0), 0);
+
+    UPDATE ANGAJATI
+    SET CAS  = ROUND(TOTAL_BRUT * v_cas_proc, 0),
+        CASS = ROUND(TOTAL_BRUT * v_cass_proc, 0);
+
+    UPDATE ANGAJATI
+    SET BRUT_IMPOZABIL = TOTAL_BRUT - CAS - CASS;
+
+    UPDATE ANGAJATI
+    SET IMPOZIT = ROUND(BRUT_IMPOZABIL * v_impozit_proc, 0);
+
+    UPDATE ANGAJATI
+    SET VIRAT_CARD = TOTAL_BRUT - IMPOZIT - CAS - CASS - NVL(RETINERI, 0);
+
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END;
+/
+
+-- 6. Procedura stocata tranzactionala pentru modificarea procentelor si recalculare atomica
+CREATE OR REPLACE PROCEDURE SP_MODIFICA_PROCENTE (
+    p_cas     IN NUMBER,
+    p_cass    IN NUMBER,
+    p_impozit IN NUMBER,
+    p_parola  IN VARCHAR2 DEFAULT NULL
+)
+AS
+BEGIN
+    UPDATE PROCENTE
+    SET CAS_PROC     = p_cas,
+        CASS_PROC    = p_cass,
+        IMPOZIT_PROC = p_impozit,
+        PAROLA_HASH  = NVL(p_parola, PAROLA_HASH)
+    WHERE ID = 1;
+
+    SP_RECALCULEAZA_SALARII;
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END;
+/
+
+-- 7. Populare initiala (inclusiv inregistrarea obligatorie de test: Popescu Ion)
+INSERT INTO ANGAJATI (NUME, PRENUME, FUNCTIE, SALAR_BAZA, SPOR_PROC, PREMII_BRUTE, RETINERI)
+VALUES ('Popescu', 'Ion', 'Inginer', 4000, 10, 0, 0);
+
+INSERT INTO ANGAJATI (NUME, PRENUME, FUNCTIE, SALAR_BAZA, SPOR_PROC, PREMII_BRUTE, RETINERI)
+VALUES ('Ionescu', 'Maria', 'Contabil', 5200, 5, 300, 150);
+
+INSERT INTO ANGAJATI (NUME, PRENUME, FUNCTIE, SALAR_BAZA, SPOR_PROC, PREMII_BRUTE, RETINERI)
+VALUES ('Georgescu', 'Dan', 'Director', 8000, 15, 500, 0);
+
+COMMIT;
+
+-- 8. Verificare calcule (Popescu Ion trebuie sa aiba: 4400, 2860, 286, 1100, 440, 2574)
+SELECT NR_CRT, NUME, PRENUME, SALAR_BAZA, SPOR_PROC, PREMII_BRUTE,
+       TOTAL_BRUT, BRUT_IMPOZABIL, IMPOZIT, CAS, CASS, RETINERI, VIRAT_CARD
+FROM ANGAJATI
+ORDER BY NR_CRT;

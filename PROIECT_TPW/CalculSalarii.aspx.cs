@@ -1,65 +1,81 @@
-﻿using System;
+using System;
 using System.Data;
-using System.Data.OracleClient;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using Oracle.ManagedDataAccess.Client;
 
-public partial class CalculSalarii : System.Web.UI.Page
+public partial class CalculSalarii : Page
 {
-    OracleConnection conn = new OracleConnection("DATA SOURCE = localhost:1521/xe; PASSWORD = student; PERSIST SECURITY INFO = True; USER ID = STUDENT");
-    OracleCommand cmd;
-    OracleDataAdapter da;
-    DataSet ds;
-
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (!Page.IsPostBack)
+        if (!IsPostBack)
         {
-            AfiseazaTabel();
+            IncarcaDate();
         }
     }
 
-    private void AfiseazaTabel()
+    private void IncarcaDate()
     {
-        try
+        using (OracleConnection conn = new OracleConnection(SecurityHelper.ConnectionString))
         {
-            conn.Open();
-            da = new OracleDataAdapter("SELECT id, nume, prenume, salar_baza, total_brut, cas, cass, impozit, retineri, virat_card FROM angajati ORDER BY id", conn);
-            ds = new DataSet();
-            da.Fill(ds, "angajati");
-            GridViewProc.DataSource = ds.Tables["angajati"].DefaultView;
-            GridViewProc.DataBind();
-        }
-        catch (Exception ex)
-        {
-            lblProcStatus.Text = "Eroare: " + ex.Message;
-        }
-        finally
-        {
-            if (conn.State == ConnectionState.Open) conn.Close();
+            string sql = @"SELECT NR_CRT, NUME, PRENUME, FUNCTIE, SALAR_BAZA, SPOR_PROC, PREMII_BRUTE,
+                                  TOTAL_BRUT, BRUT_IMPOZABIL, IMPOZIT, CAS, CASS, RETINERI, VIRAT_CARD
+                           FROM ANGAJATI";
+            using (OracleCommand cmd = new OracleCommand())
+            {
+                cmd.Connection = conn;
+                if (!string.IsNullOrWhiteSpace(txtFiltru.Text))
+                {
+                    sql += " WHERE UPPER(NUME) LIKE :pF OR UPPER(PRENUME) LIKE :pF";
+                    cmd.Parameters.Add("pF", OracleDbType.Varchar2).Value = "%" + txtFiltru.Text.Trim().ToUpper() + "%";
+                }
+                sql += " ORDER BY NR_CRT";
+                cmd.CommandText = sql;
+
+                OracleDataAdapter da = new OracleDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                gvCalcul.DataSource = dt;
+                gvCalcul.DataBind();
+            }
         }
     }
 
-    protected void btnExecutaProc_Click(object sender, EventArgs e)
+    protected void btnRecalculeaza_Click(object sender, EventArgs e)
     {
-        try
+        using (OracleConnection conn = new OracleConnection(SecurityHelper.ConnectionString))
         {
-            conn.Open();
-            cmd = new OracleCommand("procedura1", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
+            try
+            {
+                conn.Open();
+                using (OracleCommand cmd = new OracleCommand("SP_RECALCULEAZA_SALARII", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.ExecuteNonQuery();
+                }
 
-            cmd.Parameters.Add("p_nume", OracleType.VarChar).Value = txtProcNume.Text.Trim();
-            cmd.Parameters.Add("p_salar", OracleType.Number).Value = Convert.ToDecimal(txtProcSalar.Text.Trim());
-
-            cmd.ExecuteNonQuery();
-            conn.Close();
-
-            lblProcStatus.Text = "Procedura stocata 'procedura1' a fost executata cu succes pentru angajatul: " + txtProcNume.Text;
-            AfiseazaTabel();
+                lblMesaj.ForeColor = System.Drawing.Color.Green;
+                lblMesaj.Text = "Calculul salariilor pentru toti angajatii s-a incheiat cu succes (tranzactie finalizata)!";
+                IncarcaDate();
+            }
+            catch (Exception ex)
+            {
+                lblMesaj.ForeColor = System.Drawing.Color.Red;
+                lblMesaj.Text = "Eroare la recalculare: " + ex.Message;
+            }
         }
-        catch (Exception ex)
-        {
-            if (conn.State == ConnectionState.Open) conn.Close();
-            lblProcStatus.Text = "Eroare la apelul procedurii stocate: " + ex.Message;
-        }
+    }
+
+    protected void btnFiltreaza_Click(object sender, EventArgs e)
+    {
+        gvCalcul.PageIndex = 0;
+        IncarcaDate();
+    }
+
+    protected void gvCalcul_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        gvCalcul.PageIndex = e.NewPageIndex;
+        IncarcaDate();
     }
 }

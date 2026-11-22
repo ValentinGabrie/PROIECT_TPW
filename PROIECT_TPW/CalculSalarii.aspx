@@ -1,27 +1,42 @@
-﻿<%@ Page Title="Apel Procedura Stocata" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeFile="CalculSalarii.aspx.cs" Inherits="CalculSalarii" %>
+<%@ Page Title="Calcul Salarii (Read-Only &amp; Procedura Stocata)" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" CodeFile="CalculSalarii.aspx.cs" Inherits="CalculSalarii" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="main-container">
-        <div class="panel-custom">
-            <h2>Modificare Salariu prin Procedura Stocata Oracle (<code>procedura1</code>)</h2>
-            <p>Apeleaza procedura stocata <code>procedura1(p_nume, p_salar)</code> din baza de date Oracle si recalculeaza automat darile la stat (CAS 25%, CASS 10%, Impozit 10%) si restul de plata (Virat Card).</p>
+    <h3>Calcul salarii &amp; Vizualizare generala (Read-Only)</h3>
+    <div class="help-box">
+        <strong>Indicatii de operare:</strong> Salariile se calculeaza automat la fiecare adaugare/actualizare prin triggerul Oracle <code>TRG_ANGAJATI_CALC</code>. Puteti apasa butonul de recalculare pentru a rula explicit procedura stocata tranzactionala <code>SP_RECALCULEAZA_SALARII</code> pentru toti angajatii.
+    </div>
 
-            <div class="form-inline" style="margin-top: 15px;">
-                <asp:Label ID="Label1" runat="server" Text="Nume Angajat: " AssociatedControlID="txtProcNume"></asp:Label>
-                <asp:TextBox ID="txtProcNume" runat="server" CssClass="form-control" placeholder="Ex: Popescu"></asp:TextBox>
-                &nbsp;&nbsp;
-                <asp:Label ID="Label2" runat="server" Text="Noul Salar de Baza: " AssociatedControlID="txtProcSalar"></asp:Label>
-                <asp:TextBox ID="txtProcSalar" runat="server" CssClass="form-control" placeholder="Ex: 9500"></asp:TextBox>
-                &nbsp;&nbsp;
-                <asp:Button ID="btnExecutaProc" runat="server" Text="Executa Procedura Stocata" CssClass="btn btn-primary" OnClick="btnExecutaProc_Click" />
-            </div>
+    <div class="form-inline" style="margin-bottom:15px;">
+        <asp:Button ID="btnRecalculeaza" runat="server" Text="Executa Recalculare Globala (SP_RECALCULEAZA_SALARII)" CssClass="btn btn-primary" OnClick="btnRecalculeaza_Click" />
+        &nbsp;|&nbsp;
+        <label>Cauta angajat:</label>
+        <asp:TextBox ID="txtFiltru" runat="server" CssClass="form-control" placeholder="Nume sau prenume..." />
+        <asp:Button ID="btnFiltreaza" runat="server" Text="Filtreaza" CssClass="btn btn-default" OnClick="btnFiltreaza_Click" />
+    </div>
 
-            <br />
-            <asp:Label ID="lblProcStatus" runat="server" CssClass="status-msg" Text="Introduceti numele si noul salariu."></asp:Label>
+    <asp:Label ID="lblMesaj" runat="server" Font-Bold="true"></asp:Label>
+    <br /><br />
 
-            <hr />
-            <h4>Stat de Plata Recalculat:</h4>
-            <asp:GridView ID="GridViewProc" runat="server" CssClass="grid-view-custom"></asp:GridView>
-        </div>
+    <div style="overflow-x:auto;">
+        <asp:GridView ID="gvCalcul" runat="server" AutoGenerateColumns="False" AllowPaging="True" PageSize="15"
+            CssClass="table table-bordered table-striped table-condensed"
+            OnPageIndexChanging="gvCalcul_PageIndexChanging">
+            <Columns>
+                <asp:BoundField DataField="NR_CRT" HeaderText="NR.CRT" />
+                <asp:BoundField DataField="NUME" HeaderText="NUME" />
+                <asp:BoundField DataField="PRENUME" HeaderText="PRENUME" />
+                <asp:BoundField DataField="FUNCTIE" HeaderText="FUNCTIE" />
+                <asp:BoundField DataField="SALAR_BAZA" HeaderText="SALAR_BAZA" />
+                <asp:BoundField DataField="SPOR_PROC" HeaderText="SPOR_%" />
+                <asp:BoundField DataField="PREMII_BRUTE" HeaderText="PREMII_BRUTE" />
+                <asp:BoundField DataField="TOTAL_BRUT" HeaderText="TOTAL_BRUT" ItemStyle-CssClass="calc-col" />
+                <asp:BoundField DataField="BRUT_IMPOZABIL" HeaderText="BRUT_IMPOZABIL" ItemStyle-CssClass="calc-col" />
+                <asp:BoundField DataField="IMPOZIT" HeaderText="IMPOZIT" ItemStyle-CssClass="calc-col" />
+                <asp:BoundField DataField="CAS" HeaderText="CAS" ItemStyle-CssClass="calc-col" />
+                <asp:BoundField DataField="CASS" HeaderText="CASS" ItemStyle-CssClass="calc-col" />
+                <asp:BoundField DataField="RETINERI" HeaderText="RETINERI" />
+                <asp:BoundField DataField="VIRAT_CARD" HeaderText="VIRAT_CARD" ItemStyle-CssClass="calc-col" />
+            </Columns>
+        </asp:GridView>
     </div>
 </asp:Content>

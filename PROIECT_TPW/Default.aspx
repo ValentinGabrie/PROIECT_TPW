@@ -1,45 +1,27 @@
-﻿<%@ Page Title="Home Page" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" %>
+﻿<%@ Page Title="Home - Ghid Utilizare" Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" CodeFile="Default.aspx.cs" Inherits="_Default" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="main-container">
-        <div class="panel-custom">
-            <h2>Sistem Informatic pentru Gestiunea Salariilor Angajatilor</h2>
-            <p>Aplicatie Web dezvoltata in Visual Studio 2022 folosind ASP.NET Web Forms, ADO.NET, AJAX, CSS, C#, baza de date Oracle 21c XE si Crystal Reports SP33.</p>
-        </div>
-
-        <div class="row">
-            <!-- Comparison: ASP.NET Server Control vs HTML Control -->
-            <div class="col-md-6">
-                <div class="panel-custom">
-                    <h4>1. Demonstratie: Control Server ASP.NET vs. Control HTML</h4>
-                    <p><strong>Control Server ASP.NET (pastreaza ViewState si executa eveniment C# pe server):</strong></p>
-                    <asp:TextBox ID="txtServerInput" runat="server" CssClass="form-control" placeholder="Introduceti text (Server Control)..."></asp:TextBox>
-                    <br />
-                    <p><strong>Control HTML Standard (fara ViewState automat la PostBack):</strong></p>
-                    <input type="text" id="txtHtmlInput" name="txtHtmlInput" class="form-control" placeholder="Introduceti text (HTML standard)..." />
-                    <br />
-                    <asp:Button ID="btnCompare" runat="server" Text="Trimite pe Server (PostBack)" CssClass="btn btn-primary" OnClick="btnCompare_Click" />
-                    <br /><br />
-                    <asp:Label ID="lblComparisonResult" runat="server" CssClass="status-msg" Text="Rezultatul comparatiei va aparea aici."></asp:Label>
-                </div>
-            </div>
-
-            <!-- Read-Only Display using SqlDataSource (Design Mode equivalent) -->
-            <div class="col-md-6">
-                <div class="panel-custom">
-                    <h4>2. Afisare Rapida (SqlDataSource - Oracle Client)</h4>
-                    <p>Vizualizare read-only conectata direct prin providerul Oracle:</p>
-                    <asp:SqlDataSource ID="SqlDataSource1" runat="server"
-                        ConnectionString="DATA SOURCE=localhost:1521/xe;PASSWORD=student;PERSIST SECURITY INFO=True;USER ID=STUDENT"
-                        ProviderName="System.Data.OracleClient"
-                        SelectCommand="SELECT ID, NUME, PRENUME, FUNCTIE, SALAR_BAZA, VIRAT_CARD FROM ANGAJATI ORDER BY ID">
-                    </asp:SqlDataSource>
-
-                    <asp:GridView ID="GridViewReadOnly" runat="server" DataSourceID="SqlDataSource1"
-                        CssClass="grid-view-custom" AutoGenerateColumns="True" EmptyDataText="Nu exista angajati in baza de date.">
-                    </asp:GridView>
-                </div>
-            </div>
-        </div>
+    <h3>ZONA AFISARE - Ghid global de operare a aplicatiei de salarizare</h3>
+    <div class="help-box">
+        <p><strong>Bine ati venit!</strong> Aceasta aplicatie gestioneaza calculul salariilor angajatilor si generarea rapoartelor tiparibile (Stat de Plata A3 si Fluturasi). Utilizati meniul superior sau bara de scurtaturi rapide pentru a naviga.</p>
     </div>
+    <h4>1. Optiunile disponibile din meniu</h4>
+    <ul>
+        <li><strong>Home:</strong> Afiseaza acest ghid global de utilizare.</li>
+        <li><strong>Introducere date &rarr; Actualizare date:</strong> Cautare, editare individuala si actualizare in masa a campurilor editabile. Coloanele calculate sunt read-only si se recalculeaza automat.</li>
+        <li><strong>Introducere date &rarr; Adaugare:</strong> Adauga angajati noi cu validari, incarcare optionala poza si calcul automat.</li>
+        <li><strong>Introducere date &rarr; Stergere:</strong> Cautare, selectare si stergere confirmata a unui angajat.</li>
+        <li><strong>Introducere date &rarr; Calcul salarii:</strong> Afisare read-only si recalculare prin procedura Oracle.</li>
+        <li><strong>Rapoarte:</strong> Genereaza Statul de Plata A3 landscape si fluturasi pe doua coloane.</li>
+        <li><strong>Procente:</strong> Modificare protejata prin parola a cotelor CAS, CASS si IMPOZIT.</li>
+    </ul>
+    <h4>2. Formule de calcul utilizate (rotunjire la intreg)</h4>
+    <ul>
+        <li><code>TOTAL_BRUT = SALAR_BAZA * (1 + SPOR_% / 100) + PREMII_BRUTE</code></li>
+        <li><code>CAS = TOTAL_BRUT * CAS_%</code></li>
+        <li><code>CASS = TOTAL_BRUT * CASS_%</code></li>
+        <li><code>BRUT_IMPOZABIL = TOTAL_BRUT - CAS - CASS</code></li>
+        <li><code>IMPOZIT = BRUT_IMPOZABIL * IMPOZIT_%</code></li>
+        <li><code>VIRAT_CARD = TOTAL_BRUT - IMPOZIT - CAS - CASS - RETINERI</code></li>
+    </ul>
 </asp:Content>

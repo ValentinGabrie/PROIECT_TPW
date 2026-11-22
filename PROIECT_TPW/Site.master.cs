@@ -9,6 +9,7 @@ using System.Web.UI.WebControls;
 
 public partial class SiteMaster : MasterPage
 {
+    private static readonly Random _random = new Random();
     private const string AntiXsrfTokenKey = "__AntiXsrfToken";
     private const string AntiXsrfUserNameKey = "__AntiXsrfUserName";
     private string _antiXsrfTokenValue;
@@ -66,7 +67,21 @@ public partial class SiteMaster : MasterPage
 
     protected void Page_Load(object sender, EventArgs e)
     {
+        if (!IsPostBack)
+        {
+            lblServerTime.Text = DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss tt");
+            imgAd1.ImageUrl = "~/Images/1.jpg";
+            imgAd2.ImageUrl = "~/Images/2.jpg";
+        }
+    }
 
+    protected void TimerHeader_Tick(object sender, EventArgs e)
+    {
+        lblServerTime.Text = DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss tt");
+        int idx1 = _random.Next(1, 4);
+        int idx2 = (idx1 % 3) + 1;
+        imgAd1.ImageUrl = "~/Images/" + idx1 + ".jpg";
+        imgAd2.ImageUrl = "~/Images/" + idx2 + ".jpg";
     }
 
     protected void Unnamed_LoggingOut(object sender, LoginCancelEventArgs e)

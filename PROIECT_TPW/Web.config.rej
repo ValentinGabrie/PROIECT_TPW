@@ -1,0 +1,18 @@
+diff a/PROIECT_TPW/Web.config b/PROIECT_TPW/Web.config	(rejected hunks)
+@@ -1,7 +1,15 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <configuration>
++  <connectionStrings>
++    <add name="OracleConn"
++         connectionString="DATA SOURCE=localhost:1521/xe;USER ID=student;PASSWORD=student;Persist Security Info=True;"
++         providerName="Oracle.ManagedDataAccess.Client" />
++  </connectionStrings>
+   <system.web>
+     <compilation debug="true" targetFramework="4.7.2" />
+-    <httpRuntime targetFramework="4.7.2" />
++    <httpRuntime targetFramework="4.7.2" maxRequestLength="10240" />
+   </system.web>
++  <appSettings>
++    <add key="ValidationSettings:UnobtrusiveValidationMode" value="None" />
++  </appSettings>
+ </configuration>

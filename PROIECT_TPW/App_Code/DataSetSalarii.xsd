@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="DataSetSalarii" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:element name="DataSetSalarii" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ANGAJATI">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="NR_CRT" type="xs:int" minOccurs="0" />
+              <xs:element name="NUME" type="xs:string" minOccurs="0" />
+              <xs:element name="PRENUME" type="xs:string" minOccurs="0" />
+              <xs:element name="FUNCTIE" type="xs:string" minOccurs="0" />
+              <xs:element name="SALAR_BAZA" type="xs:int" minOccurs="0" />
+              <xs:element name="SPOR_PROC" type="xs:int" minOccurs="0" />
+              <xs:element name="PREMII_BRUTE" type="xs:int" minOccurs="0" />
+              <xs:element name="TOTAL_BRUT" type="xs:int" minOccurs="0" />
+              <xs:element name="BRUT_IMPOZABIL" type="xs:int" minOccurs="0" />
+              <xs:element name="IMPOZIT" type="xs:int" minOccurs="0" />
+              <xs:element name="CAS" type="xs:int" minOccurs="0" />
+              <xs:element name="CASS" type="xs:int" minOccurs="0" />
+              <xs:element name="RETINERI" type="xs:int" minOccurs="0" />
+              <xs:element name="VIRAT_CARD" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -2,18 +2,26 @@
 
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="ro">
 <head runat="server">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%: Page.Title %> - My ASP.NET Application</title>
+    <title><%: Page.Title %> - Proiect ASP.NET Aplicatie Salarizare</title>
 
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/bundles/modernizr") %>
     </asp:PlaceHolder>
     <webopt:bundlereference runat="server" path="~/Content/css" />
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-
+    <style>
+        .exam-header { background-color: #4b6c9e; color: #ffffff; padding: 15px 25px; margin-top: 55px; border-radius: 4px 4px 0 0; }
+        .exam-header h2 { margin-top: 0; font-weight: bold; text-transform: uppercase; }
+        .exam-menu-bar { background-color: #3a4f63; padding: 8px 20px; }
+        .shortcut-panel { background-color: #eef3f9; padding: 8px 20px; border-bottom: 1px solid #c5d5ea; margin-bottom: 15px; }
+        .ad-img { width: 160px; height: 110px; object-fit: cover; border: 2px solid #ffffff; margin-left: 15px; }
+        .calc-col { background-color: #fff3b0; font-weight: bold; }
+        .help-box { background-color: #f8fbff; border-left: 4px solid #4b6c9e; padding: 10px 15px; margin-bottom: 15px; }
+    </style>
 </head>
 <body>
     <form runat="server">
@@ -45,23 +53,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" runat="server" href="~/">GESTIUNE SALARII</a><br />
-                    <asp:Menu ID="Menu1" runat="server" Orientation="Horizontal"
-                        BackColor="Yellow" BorderColor="Red" BorderStyle="Double"
-                        Font-Size="Large" ForeColor="#0000CC">
-                        <DynamicHoverStyle BackColor="#FF66CC" BorderColor="Yellow" BorderStyle="Dotted" Font-Italic="True" />
-                        <DynamicMenuStyle BackColor="#99FF33" BorderColor="Yellow" BorderStyle="Solid" />
-                        <Items>
-                            <asp:MenuItem NavigateUrl="~/Default.aspx" Text="ACASA &nbsp;&nbsp;&nbsp;" Value="ACASA"></asp:MenuItem>
-                            <asp:MenuItem Text="OPERATII SALARII &nbsp;&nbsp;&nbsp;" Value="OPERATII">
-                                <asp:MenuItem NavigateUrl="~/ActualizareDate.aspx" Text="Actualizare &amp; Cautare (ADO.NET)" Value="Actualizare"></asp:MenuItem>
-                                <asp:MenuItem NavigateUrl="~/CalculSalarii.aspx" Text="Procedura Stocata &amp; Calcul" Value="Procedura"></asp:MenuItem>
-                                <asp:MenuItem NavigateUrl="~/ServiciuWebPage.aspx" Text="Acces prin Serviciu Web" Value="ServiciuWeb"></asp:MenuItem>
-                            </asp:MenuItem>
-                            <asp:MenuItem NavigateUrl="~/Rapoarte.aspx" Text="RAPOARTE CRYSTAL" Value="RAPOARTE"></asp:MenuItem>
-                        </Items>
-                    </asp:Menu>
-                    &nbsp;
+                    <a class="navbar-brand" runat="server" href="~/Default.aspx">PROIECT ASP.NET SALARIZARE</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <!-- Old default menu commented out as required
@@ -91,11 +83,58 @@
             </div>
         </div>
         <div class="container body-content">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server">
-            </asp:ContentPlaceHolder>
+            <div class="exam-header">
+                <h2>PROIECT ASP.NET APLICATIE SALARIZARE - NUME STUDENT</h2>
+                <asp:UpdatePanel ID="UpdatePanelHeader" runat="server" UpdateMode="Conditional">
+                    <ContentTemplate>
+                        <asp:Timer ID="TimerHeader" runat="server" Interval="2000" OnTick="TimerHeader_Tick"></asp:Timer>
+                        <div class="row" style="display:flex; align-items:center;">
+                            <div class="col-md-5"><asp:Label ID="lblServerTime" runat="server" Font-Size="Large" Font-Bold="true"></asp:Label></div>
+                            <div class="col-md-7 text-right">
+                                <asp:Image ID="imgAd1" runat="server" CssClass="ad-img" AlternateText="Reclama 1" />
+                                <asp:Image ID="imgAd2" runat="server" CssClass="ad-img" AlternateText="Reclama 2" />
+                            </div>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
+            <div class="exam-menu-bar">
+                <asp:Menu ID="Menu1" runat="server" Orientation="Horizontal" BackColor="#3a4f63" ForeColor="White" Font-Size="Medium"
+                    StaticMenuItemStyle-HorizontalPadding="15px" StaticMenuItemStyle-VerticalPadding="6px" DynamicMenuStyle-BackColor="#4b6c9e"
+                    DynamicMenuItemStyle-Padding="8px 15px" DynamicHoverStyle-BackColor="#6a8ec4" StaticHoverStyle-BackColor="#4b6c9e">
+                    <Items>
+                        <asp:MenuItem NavigateUrl="~/Default.aspx" Text="Home" Value="Home" />
+                        <asp:MenuItem Text="Introducere date" Value="IntroducereDate">
+                            <asp:MenuItem NavigateUrl="~/ActualizareDate.aspx" Text="Actualizare date" Value="Actualizare" />
+                            <asp:MenuItem NavigateUrl="~/AdaugareAngajati.aspx" Text="Adaugare" Value="Adaugare" />
+                            <asp:MenuItem NavigateUrl="~/StergereAngajati.aspx" Text="Stergere" Value="Stergere" />
+                            <asp:MenuItem NavigateUrl="~/CalculSalarii.aspx" Text="Calcul salarii" Value="Calcul" />
+                        </asp:MenuItem>
+                        <asp:MenuItem Text="Rapoarte" Value="Rapoarte">
+                            <asp:MenuItem NavigateUrl="~/StatPlata.aspx" Text="Stat plata" Value="StatPlata" />
+                            <asp:MenuItem NavigateUrl="~/Fluturasi.aspx" Text="Fluturasi" Value="Fluturasi" />
+                        </asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/ModifProcente.aspx" Text="Procente" Value="Procente" />
+                    </Items>
+                </asp:Menu>
+            </div>
+            <asp:Panel ID="PanelShortcuts" runat="server" CssClass="shortcut-panel">
+                <strong>Scurtaturi rapide: </strong>&nbsp;
+                <asp:Button ID="btnScHome" runat="server" Text="Home" PostBackUrl="~/Default.aspx" CssClass="btn btn-xs btn-default" CausesValidation="false" />
+                <asp:Button ID="btnScActualizare" runat="server" Text="Actualizare" PostBackUrl="~/ActualizareDate.aspx" CssClass="btn btn-xs btn-primary" CausesValidation="false" />
+                <asp:Button ID="btnScAdaugare" runat="server" Text="Adaugare" PostBackUrl="~/AdaugareAngajati.aspx" CssClass="btn btn-xs btn-success" CausesValidation="false" />
+                <asp:Button ID="btnScStergere" runat="server" Text="Stergere" PostBackUrl="~/StergereAngajati.aspx" CssClass="btn btn-xs btn-danger" CausesValidation="false" />
+                <asp:Button ID="btnScCalcul" runat="server" Text="Calcul Salarii" PostBackUrl="~/CalculSalarii.aspx" CssClass="btn btn-xs btn-default" CausesValidation="false" />
+                <asp:Button ID="btnScStat" runat="server" Text="Stat Plata (A3)" PostBackUrl="~/StatPlata.aspx" CssClass="btn btn-xs btn-info" CausesValidation="false" />
+                <asp:Button ID="btnScFluturasi" runat="server" Text="Fluturasi" PostBackUrl="~/Fluturasi.aspx" CssClass="btn btn-xs btn-info" CausesValidation="false" />
+                <asp:Button ID="btnScProcente" runat="server" Text="Modif. Procente" PostBackUrl="~/ModifProcente.aspx" CssClass="btn btn-xs btn-warning" CausesValidation="false" />
+            </asp:Panel>
+            <div style="min-height: 450px; padding: 15px; background: #ffffff; border: 1px solid #dddddd;">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+            </div>
             <hr />
             <footer>
-                <p>&copy; <%: DateTime.Now.Year %> - My ASP.NET Application</p>
+                <p>&copy; <%: DateTime.Now.Year %> - Proiect ASP.NET Aplicatie Salarizare</p>
             </footer>
         </div>
     </form>
